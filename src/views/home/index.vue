@@ -1,5 +1,6 @@
 <template>
   <canvas id="custom-canvas"></canvas>
+  <button @click="test">button</button>
   <!-- <textarea class="textarea">AAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBC</textarea> -->
 </template>
 
@@ -7,8 +8,9 @@
 import { fabric } from 'fabric'
 import { onMounted } from 'vue'
 
+let canvas: fabric.Canvas
 const canvasInit = () => {
-  const canvas = new fabric.Canvas('custom-canvas', { width: 1000, height: 1000 })
+  canvas = new fabric.Canvas('custom-canvas', { width: 400, height: 400 })
 
   const rect = new fabric.Rect({
     width: 400,
@@ -176,12 +178,34 @@ const canvasInit = () => {
     top: 30
   })
 
-  canvas.add(group1, group2)
+  canvas.add(group3)
+
+  // canvas.add(group1, group2)
 }
+
+const pathTest = new fabric.Path('M 10 10 L 100 300 L 200 300 Z', {
+  stroke: '#bb0000',
+  strokeWidth: 5,
+  fill: 'transparent'
+})
+
+const group3 = new fabric.Group([pathTest], {
+  left: 0,
+  top: 0
+})
 
 onMounted(() => {
   canvasInit()
 })
+
+const test = () => {
+  console.log('test', pathTest)
+  pathTest.path[0][1] = pathTest.path[0][1] + 10
+  pathTest.path[0][2] = pathTest.path[0][2] + 10
+  pathTest.dirty = true
+
+  canvas.requestRenderAll()
+}
 </script>
 
 <style lang="scss">
