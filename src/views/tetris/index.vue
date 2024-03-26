@@ -5,10 +5,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import MyWorker from './game/worker.js?worker'
+import Game from './game/game'
 
 onMounted(() => {
-  const worker = new MyWorker()
-  worker.postMessage('game-canvas')
+  // const worker = new MyWorker()
+  // worker.postMessage('game-canvas')
+  Game.initGame('game-canvas')
 })
 </script>
 

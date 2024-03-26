@@ -30,14 +30,18 @@ class Scene extends GameNodeBase {
   }
 
   private gameLoop() {
-    while (this.isGameLooping) {
-      const currentTime = Date.now()
-      const deltaTime = currentTime - this.lastGameLoopTime
-      if (this.lastGameLoopTime === 0 || deltaTime >= this.gameLoopDelta) {
-        this.updateLoop(deltaTime)
-        this.renderLoop()
-      }
-    }
+    // while (this.isGameLooping) {
+    //   const currentTime = Date.now()
+    //   const deltaTime = currentTime - this.lastGameLoopTime
+    //   if (this.lastGameLoopTime === 0 || deltaTime >= this.gameLoopDelta) {
+    //     this.updateLoop(deltaTime)
+    //     this.renderLoop()
+    //   }
+    // }
+    setInterval(() => {
+      this.updateLoop(this.gameLoopDelta)
+      this.renderLoop()
+    }, this.gameLoopDelta)
   }
 
   private rendernFabricObject(node: GameNodeBase, canvas: fabric.Canvas) {
