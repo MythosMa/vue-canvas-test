@@ -178,20 +178,28 @@ const canvasInit = () => {
     top: 30
   })
 
-  canvas.add(group3)
+  // const circleTest = new fabric.Circle({
+  //   radius: 100,
+  //   fill: '#0000ff',
+  //   left: 10,
+  //   top: 10
+  // })
 
-  // canvas.add(group1, group2)
+  canvas.add(groupTest)
+
+  console.log(canvas.getObjects())
 }
 
-const pathTest = new fabric.Path('M 10 10 L 100 300 L 200 300 Z', {
-  stroke: '#bb0000',
-  strokeWidth: 5,
-  fill: 'transparent'
+const circleTest = new fabric.Circle({
+  radius: 100,
+  fill: '#0000ff',
+  left: 10,
+  top: 10
 })
 
-const group3 = new fabric.Group([pathTest], {
-  left: 0,
-  top: 0
+const groupTest = new fabric.Group([circleTest], {
+  left: 100,
+  top: 100
 })
 
 onMounted(() => {
@@ -199,12 +207,11 @@ onMounted(() => {
 })
 
 const test = () => {
-  console.log('test', pathTest)
-  pathTest.path[0][1] = pathTest.path[0][1] + 10
-  pathTest.path[0][2] = pathTest.path[0][2] + 10
-  pathTest.dirty = true
-
-  canvas.requestRenderAll()
+  // groupTest.item(0).set('fill', groupTest.item(0).fill === '#0000ff' ? '#ff00ff' : '#0000ff')
+  circleTest.set('fill', circleTest.fill === '#0000ff' ? '#ff00ff' : '#0000ff')
+  // circleTest.fill = circleTest.fill === '#0000ff' ? '#ff00ff' : '#0000ff'
+  console.log(circleTest.fill)
+  canvas.renderAll()
 }
 </script>
 
