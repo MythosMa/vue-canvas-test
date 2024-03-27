@@ -1,69 +1,79 @@
 import GameNodeBase from './base'
 import { fabric } from 'fabric'
+import MyWorker from '../worker.js?worker'
+import Node from './node'
 
 class Scene extends GameNodeBase {
-  private canvas: fabric.Canvas | null = null
+  private canvas: fabric.StaticCanvas | null = null
   private gameFps: number = 0
-  private gameLoopDelta: number = 0
-  private isGameLooping: boolean = false
-  private lastGameLoopTime: number = 0
+  private fpsText: Node | null = null
   public constructor({
     gameFps,
     canvasId,
     width,
-    height
+    height,
+    isShowFps
   }: {
     gameFps: number
     canvasId: string
     width: number
     height: number
+    isShowFps: boolean
   }) {
     super()
     this.gameFps = gameFps
-    this.gameLoopDelta = 1000 / gameFps
-    this.canvas = new fabric.Canvas(canvasId, {
+    this.canvas = new fabric.StaticCanvas(canvasId, {
       width,
       height
     })
-    this.isGameLooping = true
+    if (isShowFps) {
+      this.fpsText = new Node()
+      this.fpsText.setFabricObject(new fabric.Text('', { fill: 'white', fontSize: 16 }))
+      this.fpsText.setNodePosition([0, 0])
+      this.fpsText.setZIndex(Number.MAX_SAFE_INTEGER)
+      this.addChild(this.fpsText)
+    }
     this.gameLoop()
   }
 
   private gameLoop() {
-    // while (this.isGameLooping) {
-    //   const currentTime = Date.now()
-    //   const deltaTime = currentTime - this.lastGameLoopTime
-    //   if (this.lastGameLoopTime === 0 || deltaTime >= this.gameLoopDelta) {
-    //     this.updateLoop(deltaTime)
-    //     this.renderLoop()
-    //   }
-    // }
-    setInterval(() => {
-      this.updateLoop(this.gameLoopDelta)
+    const worker = new MyWorker()
+    worker.postMessage({
+      gameFps: this.gameFps
+    })
+    worker.onmessage = (event) => {
+      if (this.fpsText) {
+        const textObj = this.fpsText.getFabricObject() as fabric.Text
+        textObj.text = `FPS: ${(1000 / event.data.deltaTime).toFixed(2)}`
+      }
+      this.updateLoop(event.data.deltaTime / 1000)
       this.renderLoop()
-    }, this.gameLoopDelta)
+    }
   }
 
-  private rendernFabricObject(node: GameNodeBase, canvas: fabric.Canvas) {
-    const nodeChildren = node.getChildren()
-    const nodeFabricObject = node.getFabricObject()
-    if (nodeFabricObject) {
-      canvas.add(nodeFabricObject)
-    }
-    if (nodeChildren.length) {
-      nodeChildren.sort((a, b) => {
-        return a.getZIndex() - b.getZIndex()
-      })
-      nodeChildren.forEach((child) => {
-        this.rendernFabricObject(child, canvas)
-      })
+  private renderFabricObject(node: GameNodeBase, canvas: fabric.StaticCanvas) {
+    if (!node.getDisabled()) {
+      const nodeChildren = node.getChildren()
+      const nodeFabricObject = node.getFabricObject()
+      if (nodeFabricObject) {
+        canvas.add(nodeFabricObject)
+      }
+      if (nodeChildren.length) {
+        nodeChildren.sort((a, b) => {
+          return a.getZIndex() - b.getZIndex()
+        })
+        nodeChildren.forEach((child) => {
+          this.renderFabricObject(child, canvas)
+        })
+      }
     }
   }
 
   private renderLoop() {
     if (this.canvas) {
       this.canvas.clear()
-      this.rendernFabricObject(this, this.canvas)
+      this.canvas.setBackgroundColor('black', () => {})
+      this.renderFabricObject(this, this.canvas)
     }
   }
 
