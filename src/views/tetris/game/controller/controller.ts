@@ -8,13 +8,14 @@ class GameController {
   private columnCount: number = 10
   private currentBlock: ShapeController | null = null
   private nextBlock: ShapeController | null = null
-  private level: number = 1
+  private level: number = 10
   private score: number = 0
   private moveColdown: number = 0
   private maxMoveColdown: number = 0
   private defaultMoveColdown: number = 1
 
   private pressKey: string = ''
+  private pressKeArray: string[] = []
   private isDownFast: boolean = false
   private isRotate: boolean = false
 
@@ -32,16 +33,32 @@ class GameController {
     this.moveColdown = this.maxMoveColdown
     this.currentBlock = new ShapeController()
     this.nextBlock = new ShapeController()
-    hotkeys('left, right, down, z, x', { keyup: true }, (event, handler) => {
-      if (event.type === 'keyup') {
-        this.pressKey = ''
-        this.isDownFast = false
-        this.isRotate = false
-      } else {
-        this.pressKey = handler.key
+
+    hotkeys(
+      'left, right, down, z, x, left+z, z+left, left+x, x+left, right+z, z+right, right+x, x+right, down+z, z+down, down+x, x+down, down+down',
+      { keyup: true },
+      (event, handler) => {
+        if (event.type === 'keyup') {
+          console.log('keyup', handler.key)
+        } else {
+          console.log('keydown', handler.key)
+        }
       }
-    })
-    this.startGame()
+    )
+
+    // hotkeys('left, right, down, z, x', { keyup: true }, (event, handler) => {
+    //   if (event.type === 'keyup') {
+    //     console.log('keyup', handler.key)
+    //     this.pressKey = ''
+    //     this.isDownFast = false
+    //     this.isRotate = false
+    //   } else {
+    //     console.log('keydown', handler.key)
+    //     event.preventDefault()
+    //     this.pressKey = handler.key
+    //   }
+    // })
+    // this.startGame()
   }
 
   public getRowCount(): number {

@@ -7,10 +7,6 @@ import { onMounted } from 'vue'
 import Game from './game/game'
 
 onMounted(() => {
-  window.addEventListener('keydown', (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-  })
   Game.initGame('game-canvas', { width: 600, height: 800, gameFps: 60, isShowFps: true })
 })
 </script>
