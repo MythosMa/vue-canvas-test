@@ -1,9 +1,11 @@
 import { generateWarmColor } from '@/utils/tools'
 
 class ShapeController {
-  private blockInfo: number[][] = []
+  private blockPoint: number[][] = [] // 砖块坐标集合[X, Y]
   private canRotate: boolean = true
   private color: string = ''
+  private currentX: number = 0
+  private currentY: number = 0
   constructor() {
     this.createBlock()
     for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
@@ -18,7 +20,7 @@ class ShapeController {
     switch (type) {
       case 0:
         // 田
-        this.blockInfo = [
+        this.blockPoint = [
           [0, -1],
           [1, -1],
           [0, 0],
@@ -28,7 +30,7 @@ class ShapeController {
         break
       case 1:
         // L
-        this.blockInfo = [
+        this.blockPoint = [
           [0, -1],
           [0, 0],
           [0, 1],
@@ -37,7 +39,7 @@ class ShapeController {
         break
       case 2:
         // 镜像L
-        this.blockInfo = [
+        this.blockPoint = [
           [0, -1],
           [0, 0],
           [0, 1],
@@ -46,7 +48,7 @@ class ShapeController {
         break
       case 3:
         // T
-        this.blockInfo = [
+        this.blockPoint = [
           [0, 0],
           [-1, 0],
           [1, 0],
@@ -55,7 +57,7 @@ class ShapeController {
         break
       case 4:
         // Z
-        this.blockInfo = [
+        this.blockPoint = [
           [0, 0],
           [1, 0],
           [1, -1],
@@ -64,7 +66,7 @@ class ShapeController {
         break
       case 5:
         // 镜像Z
-        this.blockInfo = [
+        this.blockPoint = [
           [0, 0],
           [0, -1],
           [1, -1],
@@ -73,7 +75,7 @@ class ShapeController {
         break
       case 6:
         // I
-        this.blockInfo = [
+        this.blockPoint = [
           [0, -2],
           [0, -1],
           [0, 0],
@@ -84,55 +86,71 @@ class ShapeController {
   }
 
   public startMove(startX: number) {
-    this.blockInfo.forEach((item) => {
-      item[0] += startX
-    })
+    this.currentX = startX
   }
 
   public moveDown() {
-    this.blockInfo.forEach((item) => {
-      item[1] += 1
-    })
+    this.currentY += 1
   }
 
   public moveLeft() {
-    this.blockInfo.forEach((item) => {
-      item[0] -= 1
-    })
+    this.currentX -= 1
   }
 
   public moveRight() {
-    this.blockInfo.forEach((item) => {
-      item[0] += 1
-    })
+    this.currentX += 1
   }
 
   public rotateRight() {
     if (this.canRotate) {
-      this.blockInfo = this.blockInfo.map((item) => {
+      this.blockPoint = this.blockPoint.map((item) => {
         return [-item[1], item[0]]
       })
     }
   }
 
+  public getPreRotateRightPosition() {
+    return this.blockPoint
+      .slice()
+      .map((item) => {
+        return [item[1], -item[0]]
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
+      })
+  }
+
   public rotateLeft() {
     if (this.canRotate) {
-      this.blockInfo = this.blockInfo.map((item) => {
+      this.blockPoint = this.blockPoint.map((item) => {
         return [item[1], -item[0]]
       })
     }
   }
 
-  public getBlockInfo() {
-    return this.blockInfo
+  public getPreRotateLeftPosition() {
+    return this.blockPoint
+      .slice()
+      .map((item) => {
+        return [item[1], -item[0]]
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
+      })
+  }
+
+  public getBlockPosition() {
+    return this.blockPoint.map((item) => {
+      return [item[0] + this.currentX, item[1] + this.currentY]
+    })
   }
 
   public getBlockColor() {
     return this.color
   }
 
-  public getBlockBottomInfo() {
-    return this.blockInfo
+  public getBlockBottomPosition() {
+    return this.blockPoint
       .slice()
       .sort((a, b) => {
         if (a[0] !== b[0]) {
@@ -149,6 +167,57 @@ class ShapeController {
           return true
         }
         return false
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
+      })
+  }
+
+  public getBlockLeftPosition() {
+    return this.blockPoint
+      .slice()
+      .sort((a, b) => {
+        if (a[1] !== b[1]) {
+          return b[1] - a[1]
+        }
+        return b[0] - a[0]
+      })
+      .filter((item, index, array) => {
+        if (index < array.length - 1) {
+          if (item[1] !== array[index + 1][1]) {
+            return true
+          }
+        } else {
+          return true
+        }
+        return false
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
+      })
+  }
+
+  public getBlockRightPosition() {
+    return this.blockPoint
+      .slice()
+      .sort((a, b) => {
+        if (a[1] !== b[1]) {
+          return a[1] - b[1]
+        }
+        return a[0] - b[0]
+      })
+      .filter((item, index, array) => {
+        if (index < array.length - 1) {
+          if (item[1] !== array[index + 1][1]) {
+            return true
+          }
+        } else {
+          return true
+        }
+        return false
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
       })
   }
 }
