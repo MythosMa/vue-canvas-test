@@ -130,6 +130,27 @@ class ShapeController {
   public getBlockColor() {
     return this.color
   }
+
+  public getBlockBottomInfo() {
+    return this.blockInfo
+      .slice()
+      .sort((a, b) => {
+        if (a[0] !== b[0]) {
+          return a[0] - b[0]
+        }
+        return a[1] - b[1]
+      })
+      .filter((item, index, array) => {
+        if (index < array.length - 1) {
+          if (item[0] !== array[index + 1][0]) {
+            return true
+          }
+        } else {
+          return true
+        }
+        return false
+      })
+  }
 }
 
 export default ShapeController

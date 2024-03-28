@@ -7,7 +7,7 @@ class GameController {
   private columnCount: number = 10
   private currentBlock: ShapeController = null
   private nextBlock: ShapeController = null
-  private level: number = 1
+  private level: number = 10
   private score: number = 0
   private moveColdown: number = 0
   private maxMoveColdown: number = 0
@@ -57,9 +57,13 @@ class GameController {
   public update(deltaTime: number) {
     if (this.isGameStart) {
       if (this.moveColdown < 0) {
-        this.refreshBoardBlocksInfo(false)
-        this.currentBlock.moveDown()
-        this.refreshBoardBlocksInfo(true)
+        if (this.checkBlockCanMoveDown()) {
+          this.refreshBoardBlocksInfo(false)
+          this.currentBlock.moveDown()
+          this.refreshBoardBlocksInfo(true)
+        } else {
+          this.showNextBlock()
+        }
         this.moveColdown = this.maxMoveColdown
       } else {
         this.moveColdown -= deltaTime
@@ -69,6 +73,27 @@ class GameController {
 
   public getBoardBlockInfo(): string[][] {
     return this.boardBlockInfo
+  }
+
+  private checkBlockCanMoveDown(): boolean {
+    const currentBlockBottomInfo = this.currentBlock.getBlockBottomInfo()
+
+    for (let i = 0; i < currentBlockBottomInfo.length; i++) {
+      const bottomBlockInfo = currentBlockBottomInfo[i]
+      if (bottomBlockInfo[1] >= this.rowCount - 1) {
+        return false
+      } else if (this.boardBlockInfo[bottomBlockInfo[1] + 1][bottomBlockInfo[0]] !== '') {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  private showNextBlock() {
+    this.currentBlock = this.nextBlock
+    this.nextBlock = new ShapeController()
+    this.currentBlock.startMove(Math.floor(this.columnCount / 2))
   }
 
   public static getInstance(): GameController {

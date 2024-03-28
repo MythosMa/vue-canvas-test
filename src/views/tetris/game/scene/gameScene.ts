@@ -1,6 +1,8 @@
 import Scene from '../../core/baseNode/scene'
 import GameLayout from '../layout/gameLayout'
 import GameController from '../controller/controller'
+import Node from '../../core/baseNode/node'
+import { fabric } from 'fabric'
 class GameScene extends Scene {
   private gameLayout: GameLayout | null = null
   constructor({

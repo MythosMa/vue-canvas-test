@@ -9,6 +9,7 @@ class GameLayout extends Node {
   private infoBoardLayout: InfoBoardLayout | null = null
   constructor() {
     super()
+    this.init()
   }
 
   public init() {

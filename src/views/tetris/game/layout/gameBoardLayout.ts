@@ -39,7 +39,6 @@ class GameBoardLayout extends Node {
       const lineInfo = boardBlockInfo[i]
       for (let j = 0; j < lineInfo.length; j++) {
         if (lineInfo[j]) {
-          console.log('lineInfo[j]', lineInfo[j])
           const fabricObject = this.blocks[i][j].getFabricObject()
           if (fabricObject) {
             fabricObject.set('fill', lineInfo[j])

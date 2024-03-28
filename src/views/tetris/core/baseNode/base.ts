@@ -10,7 +10,6 @@ class GameNodeBase {
   constructor(fabricObject: fabric.Object | null = null) {
     this.nodeId = Math.random() + ''
     this.fabricObject = fabricObject
-    this.init()
   }
 
   protected init() {}
