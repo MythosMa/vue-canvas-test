@@ -112,6 +112,10 @@ class GameNodeBase {
     return this.children.splice(index, 1)[0]
   }
 
+  public removeAllChildren() {
+    this.children = []
+  }
+
   public getChildren() {
     return this.children
   }

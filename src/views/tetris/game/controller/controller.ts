@@ -1,5 +1,4 @@
 import ShapeController from './shapeController'
-import hotkeys from 'hotkeys-js'
 
 class GameController {
   private static instance: GameController
@@ -8,18 +7,20 @@ class GameController {
   private columnCount: number = 10
   private currentBlock: ShapeController | null = null
   private nextBlock: ShapeController | null = null
-  private level: number = 10
+  private level: number = 1
   private score: number = 0
   private moveColdown: number = 0
   private maxMoveColdown: number = 0
   private defaultMoveColdown: number = 1
 
-  private pressKey: string = ''
-  private pressKeArray: string[] = []
+  private pressKeyMap: Map<string, number> = new Map()
+  private readonly PRESS_KEY_DOWN_COLD = 20
+  private readonly PRESS_KEY_ARRAY = ['arrowdown', 'arrowleft', 'arrowright', 'z', 'x']
   private isDownFast: boolean = false
   private isRotate: boolean = false
 
   private isGameStart: boolean = false
+  private isGameOver: boolean = false
   constructor() {}
 
   public init() {
@@ -34,31 +35,48 @@ class GameController {
     this.currentBlock = new ShapeController()
     this.nextBlock = new ShapeController()
 
-    hotkeys(
-      'left, right, down, z, x, left+z, z+left, left+x, x+left, right+z, z+right, right+x, x+right, down+z, z+down, down+x, x+down, down+down',
-      { keyup: true },
-      (event, handler) => {
-        if (event.type === 'keyup') {
-          console.log('keyup', handler.key)
-        } else {
-          console.log('keydown', handler.key)
+    if (document) {
+      document.addEventListener('keydown', (event) => {
+        event.stopPropagation()
+        event.preventDefault()
+        this.handleKeyboard(true, event.key)
+      })
+
+      document.addEventListener('keyup', (event) => {
+        event.stopPropagation()
+        event.preventDefault()
+        this.handleKeyboard(false, event.key)
+      })
+    }
+
+    this.startGame()
+  }
+
+  private handleKeyboard(isDown: boolean, key: string) {
+    const lowerKey = key.toLowerCase()
+    if (this.PRESS_KEY_ARRAY.includes(lowerKey)) {
+      if (isDown) {
+        if (!this.pressKeyMap.has(lowerKey)) {
+          if (lowerKey === 'arrowleft' && this.pressKeyMap.has('arrowright')) {
+            return
+          }
+          if (lowerKey === 'arrowright' && this.pressKeyMap.has('arrowleft')) {
+            return
+          }
+          this.pressKeyMap.set(lowerKey, 1)
+        }
+      } else {
+        if (lowerKey === 'z' || lowerKey === 'x') {
+          this.isRotate = false
+        }
+        if (lowerKey === 'arrowdown') {
+          this.isDownFast = false
+        }
+        if (this.pressKeyMap.has(lowerKey)) {
+          this.pressKeyMap.delete(lowerKey)
         }
       }
-    )
-
-    // hotkeys('left, right, down, z, x', { keyup: true }, (event, handler) => {
-    //   if (event.type === 'keyup') {
-    //     console.log('keyup', handler.key)
-    //     this.pressKey = ''
-    //     this.isDownFast = false
-    //     this.isRotate = false
-    //   } else {
-    //     console.log('keydown', handler.key)
-    //     event.preventDefault()
-    //     this.pressKey = handler.key
-    //   }
-    // })
-    // this.startGame()
+    }
   }
 
   public getRowCount(): number {
@@ -70,8 +88,8 @@ class GameController {
   }
 
   public startGame() {
+    this.isGameStart = true
     if (this.currentBlock) {
-      this.isGameStart = true
       this.currentBlock.startMove(Math.floor(this.columnCount / 2))
       this.refreshBoardBlocksInfo(true)
     }
@@ -94,21 +112,25 @@ class GameController {
   public update(deltaTime: number) {
     if (this.isGameStart) {
       if (this.currentBlock) {
-        if (this.pressKey) {
-          this.pressKeyUpdate(this.pressKey)
-          this.pressKey = ''
+        this.refreshBoardBlocksInfo(false)
+        if (this.pressKeyMap.size) {
+          this.pressKeyMapUpdate(this.pressKeyMap)
         }
         if (this.isDownFast || this.moveColdown <= 0) {
-          if (this.checkBlockCanMoveDown()) {
-            this.refreshBoardBlocksInfo(false)
-            this.currentBlock.moveDown()
-            this.refreshBoardBlocksInfo(true)
-          } else {
-            this.checkLineCleanUp()
-            this.showNextBlock()
-            this.isDownFast = false
-          }
           this.moveColdown = this.maxMoveColdown
+          if (this.checkBlockCanMoveDown()) {
+            this.currentBlock.moveDown()
+          } else {
+            if (!this.checkDownGameOver()) {
+              this.refreshBoardBlocksInfo(true)
+              this.checkLineCleanUp()
+              this.showNextBlock()
+              this.checkShowGameOver()
+            }
+            this.isDownFast = false
+            this.pressKeyMap.delete('arrowdown')
+            return
+          }
         } else {
           this.moveColdown -= deltaTime
         }
@@ -176,9 +198,81 @@ class GameController {
     return false
   }
 
+  private checkBlockCanRotateMove(blocks: number[][]) {
+    let isFix = false
+    do {
+      isFix = false
+      let isFixMoveRight = false
+      for (let i = 0; i < blocks.length; i++) {
+        const blockInfo = blocks[i]
+        if (blockInfo[0] < 0) {
+          isFixMoveRight = true
+          isFix = true
+          break
+        }
+      }
+      if (isFixMoveRight) {
+        for (let i = 0; i < blocks.length; i++) {
+          blocks[i][0]++
+        }
+      }
+
+      let isFixMoveLeft = false
+      for (let i = 0; i < blocks.length; i++) {
+        const blockInfo = blocks[i]
+        if (blockInfo[0] >= this.columnCount) {
+          isFixMoveLeft = true
+          isFix = true
+          break
+        }
+      }
+      if (isFixMoveLeft) {
+        for (let i = 0; i < blocks.length; i++) {
+          blocks[i][0]--
+        }
+      }
+    } while (isFix)
+  }
+
+  private fixBlockAfterRotate() {
+    if (this.currentBlock) {
+      let isFix = false
+      do {
+        isFix = false
+        const blockPosition = this.currentBlock.getBlockPosition()
+        let isFixMoveRight = false
+        for (let i = 0; i < blockPosition.length; i++) {
+          const blockInfo = blockPosition[i]
+          if (blockInfo[0] < 0) {
+            isFixMoveRight = true
+            isFix = true
+            break
+          }
+        }
+        if (isFixMoveRight) {
+          this.currentBlock.moveRight()
+        }
+
+        let isFixMoveLeft = false
+        for (let i = 0; i < blockPosition.length; i++) {
+          const blockInfo = blockPosition[i]
+          if (blockInfo[0] >= this.columnCount) {
+            isFixMoveLeft = true
+            isFix = true
+            break
+          }
+        }
+        if (isFixMoveLeft) {
+          this.currentBlock.moveLeft()
+        }
+      } while (isFix)
+    }
+  }
+
   private checkBlockCanRotateLeft(): boolean {
     if (this.currentBlock) {
       const currentBlockRotateLeftPosition = this.currentBlock.getPreRotateLeftPosition()
+      this.checkBlockCanRotateMove(currentBlockRotateLeftPosition)
       for (let i = 0; i < currentBlockRotateLeftPosition.length; i++) {
         const rotateLeftBlockInfo = currentBlockRotateLeftPosition[i]
         if (rotateLeftBlockInfo[0] >= 0 && rotateLeftBlockInfo[1] >= 0) {
@@ -195,6 +289,7 @@ class GameController {
   private checkBlockCanRotateRight(): boolean {
     if (this.currentBlock) {
       const currentBlockRotateRightPosition = this.currentBlock.getPreRotateRightPosition()
+      this.checkBlockCanRotateMove(currentBlockRotateRightPosition)
       for (let i = 0; i < currentBlockRotateRightPosition.length; i++) {
         const rotateRightBlockInfo = currentBlockRotateRightPosition[i]
         if (rotateRightBlockInfo[0] >= 0 && rotateRightBlockInfo[1] >= 0) {
@@ -216,26 +311,31 @@ class GameController {
     }
   }
 
-  private pressKeyUpdate(pressKey: string) {
-    this.refreshBoardBlocksInfo(false)
-    switch (pressKey) {
-      case 'left':
-        this.handleBlockMoveLeft()
-        break
-      case 'right':
-        this.handleBlockMoveRight()
-        break
-      case 'down':
-        this.handleBlockMoveDown()
-        break
-      case 'z':
-        this.handleBlockRotateLeft()
-        break
-      case 'x':
-        this.handleBlockRotateRight()
-        break
+  private pressKeyMapUpdate(pressKeyMap: Map<string, number>) {
+    for (const [key, value] of pressKeyMap.entries()) {
+      pressKeyMap.set(key, value + 1)
+      if (1 < value && value < this.PRESS_KEY_DOWN_COLD) {
+        return
+      }
+      switch (key) {
+        case 'arrowleft':
+          console.log('left', value)
+          this.handleBlockMoveLeft()
+          break
+        case 'arrowright':
+          this.handleBlockMoveRight()
+          break
+        case 'arrowdown':
+          this.handleBlockMoveDown()
+          break
+        case 'z':
+          this.handleBlockRotateLeft()
+          break
+        case 'x':
+          this.handleBlockRotateRight()
+          break
+      }
     }
-    this.refreshBoardBlocksInfo(true)
   }
 
   private handleBlockMoveLeft() {
@@ -257,6 +357,7 @@ class GameController {
   private handleBlockRotateLeft() {
     if (!this.isRotate && this.currentBlock && this.checkBlockCanRotateLeft()) {
       this.currentBlock.rotateLeft()
+      this.fixBlockAfterRotate()
       this.isRotate = true
     }
   }
@@ -264,6 +365,7 @@ class GameController {
   private handleBlockRotateRight() {
     if (!this.isRotate && this.currentBlock && this.checkBlockCanRotateRight()) {
       this.currentBlock.rotateRight()
+      this.fixBlockAfterRotate()
       this.isRotate = true
     }
   }
@@ -284,6 +386,54 @@ class GameController {
         this.boardBlockInfo[0] = Array(this.columnCount).fill('')
       }
     }
+  }
+
+  private checkDownGameOver() {
+    if (this.currentBlock) {
+      const currentBlockTopPosition = this.currentBlock.getBlockTopPosition()
+      for (let i = 0; i < currentBlockTopPosition.length; i++) {
+        const topBlockInfo = currentBlockTopPosition[i]
+        if (topBlockInfo[1] < 0) {
+          this.gameOver()
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  private checkShowGameOver() {
+    if (this.currentBlock) {
+      const currentBlockBottomPosition = this.currentBlock.getBlockBottomPosition()
+      for (let i = 0; i < currentBlockBottomPosition.length; i++) {
+        const bottomBlockInfo = currentBlockBottomPosition[i]
+        if (bottomBlockInfo[1] >= 0 && bottomBlockInfo[0]) {
+          if (this.boardBlockInfo[bottomBlockInfo[1]][bottomBlockInfo[0]] !== '') {
+            this.gameOver()
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
+  private gameOver() {
+    for (let i = 0; i < this.rowCount; i++) {
+      for (let j = 0; j < this.columnCount; j++) {
+        this.boardBlockInfo[i][j] === ''
+      }
+    }
+    this.isGameStart = false
+    this.isGameOver = true
+  }
+
+  public getIsGameOver() {
+    return this.isGameOver
+  }
+
+  public getNextBlock() {
+    return this.nextBlock
   }
 
   public static getInstance(): GameController {

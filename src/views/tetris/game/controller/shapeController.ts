@@ -173,6 +173,20 @@ class ShapeController {
       })
   }
 
+  public getBlockTopPosition() {
+    return this.blockPoint
+      .slice()
+      .sort((a, b) => {
+        if (a[0] !== b[0]) {
+          return b[0] - a[0]
+        }
+        return a[1] - b[1]
+      })
+      .map((item) => {
+        return [item[0] + this.currentX, item[1] + this.currentY]
+      })
+  }
+
   public getBlockLeftPosition() {
     return this.blockPoint
       .slice()

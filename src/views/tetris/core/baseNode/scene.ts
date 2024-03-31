@@ -39,15 +39,22 @@ class Scene extends GameNodeBase {
   private gameLoop() {
     const worker = new MyWorker()
     worker.postMessage({
+      type: 'start',
       gameFps: this.gameFps
     })
     worker.onmessage = (event) => {
+      worker.postMessage({
+        type: 'updateStart'
+      })
       if (this.fpsText) {
         const textObj = this.fpsText.getFabricObject() as fabric.Text
         textObj.text = `FPS: ${(1000 / event.data.deltaTime).toFixed(2)}`
       }
       this.updateLoop(event.data.deltaTime / 1000)
       this.renderLoop()
+      worker.postMessage({
+        type: 'updateEnd'
+      })
     }
   }
 
