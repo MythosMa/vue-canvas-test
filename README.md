@@ -1,4 +1,8 @@
-# vue-canvas-test
+# vue-fabrics-game-test
+
+## vue + fabrics 的测试demo
+
+## 项目中包含了简单的 fabrics 应用 以及 一个俄罗斯方块的游戏引擎示例
 
 This template should help get you started developing with Vue 3 in Vite.
 
