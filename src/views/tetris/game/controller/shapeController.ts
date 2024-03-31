@@ -6,18 +6,23 @@ class ShapeController {
   private color: string = ''
   private currentX: number = 0
   private currentY: number = 0
-  constructor() {
-    this.createBlock()
+  private blockType: number = 0
+  constructor(lastType: number = 0) {
+    this.createBlock(lastType)
     for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
       const r = Math.random() < 0.5 ? this.rotateLeft.bind(this) : this.rotateRight.bind(this)
       r()
     }
   }
 
-  public createBlock() {
+  public createBlock(lastType: number) {
     this.color = generateWarmColor()
-    const type = Math.floor(Math.random() * 7)
-    switch (type) {
+    this.blockType = (() => {
+      let n
+      while ((n = Math.floor(Math.random() * 7)) === lastType);
+      return n
+    })()
+    switch (this.blockType) {
       case 0:
         // 田
         this.blockPoint = [
@@ -83,6 +88,10 @@ class ShapeController {
         ]
         break
     }
+  }
+
+  public getBlockType() {
+    return this.blockType
   }
 
   public startMove(startX: number) {

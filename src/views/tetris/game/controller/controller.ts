@@ -35,7 +35,7 @@ class GameController {
     this.maxMoveColdown = this.defaultMoveColdown / this.level
     this.moveColdown = this.maxMoveColdown
     this.currentBlock = new ShapeController()
-    this.nextBlock = new ShapeController()
+    this.nextBlock = new ShapeController(this.currentBlock.getBlockType())
 
     if (document) {
       document.addEventListener('keydown', (event) => {
@@ -319,7 +319,7 @@ class GameController {
   private showNextBlock() {
     if (this.currentBlock && this.nextBlock) {
       this.currentBlock = this.nextBlock
-      this.nextBlock = new ShapeController()
+      this.nextBlock = new ShapeController(this.currentBlock.getBlockType())
       this.currentBlock.startMove(Math.floor(this.columnCount / 2))
     }
   }
