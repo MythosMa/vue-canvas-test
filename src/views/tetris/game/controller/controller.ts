@@ -9,6 +9,8 @@ class GameController {
   private nextBlock: ShapeController | null = null
   private level: number = 1
   private score: number = 0
+  private cleanLine: number = 0
+  private addLevelLine: number = 20
   private moveColdown: number = 0
   private maxMoveColdown: number = 0
   private defaultMoveColdown: number = 1
@@ -129,7 +131,6 @@ class GameController {
             }
             this.isDownFast = false
             this.pressKeyMap.delete('arrowdown')
-            return
           }
         } else {
           this.moveColdown -= deltaTime
@@ -276,8 +277,15 @@ class GameController {
       for (let i = 0; i < currentBlockRotateLeftPosition.length; i++) {
         const rotateLeftBlockInfo = currentBlockRotateLeftPosition[i]
         if (rotateLeftBlockInfo[0] >= 0 && rotateLeftBlockInfo[1] >= 0) {
-          if (this.boardBlockInfo[rotateLeftBlockInfo[1]][rotateLeftBlockInfo[0]] !== '') {
-            return false
+          if (
+            rotateLeftBlockInfo[1] >= 0 &&
+            rotateLeftBlockInfo[0] &&
+            rotateLeftBlockInfo[1] < this.rowCount &&
+            rotateLeftBlockInfo[0] < this.columnCount
+          ) {
+            if (this.boardBlockInfo[rotateLeftBlockInfo[1]][rotateLeftBlockInfo[0]] !== '') {
+              return false
+            }
           }
         }
       }
@@ -292,7 +300,12 @@ class GameController {
       this.checkBlockCanRotateMove(currentBlockRotateRightPosition)
       for (let i = 0; i < currentBlockRotateRightPosition.length; i++) {
         const rotateRightBlockInfo = currentBlockRotateRightPosition[i]
-        if (rotateRightBlockInfo[0] >= 0 && rotateRightBlockInfo[1] >= 0) {
+        if (
+          rotateRightBlockInfo[1] >= 0 &&
+          rotateRightBlockInfo[0] &&
+          rotateRightBlockInfo[1] < this.rowCount &&
+          rotateRightBlockInfo[0] < this.columnCount
+        ) {
           if (this.boardBlockInfo[rotateRightBlockInfo[1]][rotateRightBlockInfo[0]] !== '') {
             return false
           }
@@ -319,7 +332,6 @@ class GameController {
       }
       switch (key) {
         case 'arrowleft':
-          console.log('left', value)
           this.handleBlockMoveLeft()
           break
         case 'arrowright':
@@ -371,7 +383,8 @@ class GameController {
   }
 
   private checkLineCleanUp() {
-    for (let i = this.rowCount - 1; i >= 0; i--) {
+    let lineCleanCount = 0
+    for (let i = 0; i < this.rowCount; i++) {
       let isCleanUp = true
       for (let j = 0; j < this.columnCount; j++) {
         if (this.boardBlockInfo[i][j] === '') {
@@ -380,11 +393,15 @@ class GameController {
         }
       }
       if (isCleanUp) {
-        for (let k = i - 1; k >= 0; k--) {
-          this.boardBlockInfo[k + 1] = this.boardBlockInfo[k]
+        for (let k = i; k > 0; k--) {
+          this.boardBlockInfo[k] = this.boardBlockInfo[k - 1]
         }
         this.boardBlockInfo[0] = Array(this.columnCount).fill('')
+        lineCleanCount++
       }
+    }
+    if (lineCleanCount > 0) {
+      this.addScore(lineCleanCount)
     }
   }
 
@@ -407,7 +424,12 @@ class GameController {
       const currentBlockBottomPosition = this.currentBlock.getBlockBottomPosition()
       for (let i = 0; i < currentBlockBottomPosition.length; i++) {
         const bottomBlockInfo = currentBlockBottomPosition[i]
-        if (bottomBlockInfo[1] >= 0 && bottomBlockInfo[0]) {
+        if (
+          bottomBlockInfo[1] >= 0 &&
+          bottomBlockInfo[0] &&
+          bottomBlockInfo[1] < this.rowCount &&
+          bottomBlockInfo[0] < this.columnCount
+        ) {
           if (this.boardBlockInfo[bottomBlockInfo[1]][bottomBlockInfo[0]] !== '') {
             this.gameOver()
             return true
@@ -434,6 +456,27 @@ class GameController {
 
   public getNextBlock() {
     return this.nextBlock
+  }
+
+  private addScore(cleanLilne: number) {
+    this.score += 2 ** (cleanLilne - 1) * 100
+    this.cleanLine += cleanLilne
+    if (this.cleanLine >= this.level * this.addLevelLine) {
+      this.level++
+      this.maxMoveColdown = this.defaultMoveColdown / this.level
+    }
+  }
+
+  public getScore() {
+    return this.score
+  }
+
+  public getLevel() {
+    return this.level
+  }
+
+  public getCleanLine() {
+    return this.cleanLine
   }
 
   public static getInstance(): GameController {

@@ -9,6 +9,9 @@ class InfoBoardLayout extends Node {
   private nextBlockInfoBoard: Node[][] = []
   private columnCount: number = 0
   private rowCount: number = 0
+  private scoreText: Node | null = null
+  private lineText: Node | null = null
+  private levelText: Node | null = null
   constructor() {
     super()
     this.init()
@@ -59,6 +62,69 @@ class InfoBoardLayout extends Node {
       }
       this.nextBlockInfoBoard.push(row)
     }
+
+    const scoreTextLabel = new Node()
+    scoreTextLabel.setNodePosition([10, 150])
+    scoreTextLabel.setFabricObject(
+      new fabric.Text('Score', {
+        fill: 'white',
+        fontSize: 24
+      })
+    )
+    scoreTextLabel.setZIndex(9999)
+    this.addChild(scoreTextLabel)
+
+    this.scoreText = new Node()
+    this.scoreText.setNodePosition([10, 190])
+    this.scoreText.setFabricObject(
+      new fabric.Text('0', {
+        fill: 'white',
+        fontSize: 16
+      })
+    )
+    this.addChild(this.scoreText)
+
+    const lineTextLabel = new Node()
+    lineTextLabel.setNodePosition([10, 220])
+    lineTextLabel.setFabricObject(
+      new fabric.Text('Line', {
+        fill: 'white',
+        fontSize: 24
+      })
+    )
+    lineTextLabel.setZIndex(9999)
+    this.addChild(lineTextLabel)
+
+    this.lineText = new Node()
+    this.lineText.setNodePosition([10, 260])
+    this.lineText.setFabricObject(
+      new fabric.Text('0', {
+        fill: 'white',
+        fontSize: 16
+      })
+    )
+    this.addChild(this.lineText)
+
+    const levelTextLabel = new Node()
+    levelTextLabel.setNodePosition([10, 290])
+    levelTextLabel.setFabricObject(
+      new fabric.Text('Level', {
+        fill: 'white',
+        fontSize: 24
+      })
+    )
+    levelTextLabel.setZIndex(9999)
+    this.addChild(levelTextLabel)
+
+    this.levelText = new Node()
+    this.levelText.setNodePosition([10, 330])
+    this.levelText.setFabricObject(
+      new fabric.Text('1', {
+        fill: 'white',
+        fontSize: 16
+      })
+    )
+    this.addChild(this.levelText)
   }
 
   public update() {
@@ -80,6 +146,26 @@ class InfoBoardLayout extends Node {
           this.nextBlockInfoBoard[y][x].setDisabled(false)
           this.nextBlockInfoBoard[y][x].getFabricObject()?.set('fill', nextBlock.getBlockColor())
         }
+      }
+    }
+    if (this.scoreText) {
+      const fab = this.scoreText.getFabricObject() as fabric.Text
+      if (fab) {
+        fab.text = GameController.getScore().toString()
+      }
+    }
+
+    if (this.lineText) {
+      const fab = this.lineText.getFabricObject() as fabric.Text
+      if (fab) {
+        fab.text = GameController.getCleanLine().toString()
+      }
+    }
+
+    if (this.levelText) {
+      const fab = this.levelText.getFabricObject() as fabric.Text
+      if (fab) {
+        fab.text = GameController.getLevel().toString()
       }
     }
   }
