@@ -64,18 +64,18 @@ class InfoBoardLayout extends Node {
     }
 
     const scoreTextLabel = new Node()
-    scoreTextLabel.setNodePosition([10, 150])
+    scoreTextLabel.setNodePosition([10, 140])
     scoreTextLabel.setFabricObject(
       new fabric.Text('Score', {
         fill: 'white',
-        fontSize: 24
+        fontSize: 20
       })
     )
     scoreTextLabel.setZIndex(9999)
     this.addChild(scoreTextLabel)
 
     this.scoreText = new Node()
-    this.scoreText.setNodePosition([10, 190])
+    this.scoreText.setNodePosition([10, 160])
     this.scoreText.setFabricObject(
       new fabric.Text('0', {
         fill: 'white',
@@ -85,18 +85,18 @@ class InfoBoardLayout extends Node {
     this.addChild(this.scoreText)
 
     const lineTextLabel = new Node()
-    lineTextLabel.setNodePosition([10, 220])
+    lineTextLabel.setNodePosition([10, 200])
     lineTextLabel.setFabricObject(
       new fabric.Text('Line', {
         fill: 'white',
-        fontSize: 24
+        fontSize: 20
       })
     )
     lineTextLabel.setZIndex(9999)
     this.addChild(lineTextLabel)
 
     this.lineText = new Node()
-    this.lineText.setNodePosition([10, 260])
+    this.lineText.setNodePosition([10, 220])
     this.lineText.setFabricObject(
       new fabric.Text('0', {
         fill: 'white',
@@ -106,18 +106,18 @@ class InfoBoardLayout extends Node {
     this.addChild(this.lineText)
 
     const levelTextLabel = new Node()
-    levelTextLabel.setNodePosition([10, 290])
+    levelTextLabel.setNodePosition([10, 260])
     levelTextLabel.setFabricObject(
       new fabric.Text('Level', {
         fill: 'white',
-        fontSize: 24
+        fontSize: 20
       })
     )
     levelTextLabel.setZIndex(9999)
     this.addChild(levelTextLabel)
 
     this.levelText = new Node()
-    this.levelText.setNodePosition([10, 330])
+    this.levelText.setNodePosition([10, 280])
     this.levelText.setFabricObject(
       new fabric.Text('1', {
         fill: 'white',
@@ -125,6 +125,17 @@ class InfoBoardLayout extends Node {
       })
     )
     this.addChild(this.levelText)
+
+    const controlTipText = new Node()
+    controlTipText.setNodePosition([10, 320])
+    controlTipText.setFabricObject(
+      new fabric.Text('控制移动\n←、↓、→\n\n控制旋转\nz、x', {
+        fill: 'white',
+        fontSize: 12
+      })
+    )
+    controlTipText.setZIndex(9999)
+    this.addChild(controlTipText)
   }
 
   public update() {
